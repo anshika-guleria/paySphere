@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { Helmet } from "react-helmet-async";
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -9,9 +11,18 @@ const GoogleIcon = () => (
 );
 
 export default function PaySphereLogin() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("mode") === "signup" ? "signup" : "login");
+  
+  // Form State
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [password, setPassword] = useState("");
+  
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const mode = searchParams.get("mode");
@@ -20,8 +31,40 @@ export default function PaySphereLogin() {
     }
   }, [searchParams]);
 
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const endpoint = activeTab === "signup" ? "/signup" : "/login";
+    const payload = activeTab === "signup" 
+      ? { fullName, email, companyName, password }
+      : { email, password };
+
+    try {
+      const response = await axios.post(`http://localhost:5000/api/auth${endpoint}`, payload);
+      
+      const { token, companyName: savedCompanyName } = response.data;
+      
+      // Save to localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("companyName", savedCompanyName);
+      
+      // Navigate to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
+      <Helmet>
+        <title>{activeTab === "signup" ? "Create Account | PaySphere" : "Login | PaySphere"}</title>
+        <meta name="description" content={activeTab === "signup" ? "Join PaySphere and automate your payroll today." : "Login to your PaySphere account to manage your employees."} />
+      </Helmet>
       <div className="flex-1 flex items-center justify-center px-4 py-6 sm:py-8">
 
         <div className="w-full max-w-6xl bg-white rounded-2xl sm:rounded-3xl shadow-xl flex flex-col md:flex-row overflow-hidden">
@@ -89,21 +132,35 @@ export default function PaySphereLogin() {
                   Enter your credentials
                 </p>
 
-                <input
-                  type="email"
-                  placeholder="name@company.com"
-                  className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
-                />
+                <form onSubmit={handleAuth}>
+                  <input
+                    type="email"
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
+                  />
 
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
-                />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
+                  />
 
-                <Link to="/dashboard" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition mb-5 text-center">
-                  Login
-                </Link>
+                  {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition mb-5 text-center disabled:opacity-50"
+                  >
+                    {loading ? "Logging in..." : "Login"}
+                  </button>
+                </form>
 
                 <div className="flex items-center gap-3 mb-5">
                   <div className="flex-1 h-px bg-gray-200" />
@@ -124,43 +181,53 @@ export default function PaySphereLogin() {
                   Create your account
                 </h2>
 
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
-                />
+                <form onSubmit={handleAuth}>
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
+                  />
 
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
-                />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
+                  />
 
-                <input
-                  type="text"
-                  placeholder="Company Name"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
-                />
+                  <input
+                    type="text"
+                    placeholder="Company Name"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    required
+                    className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
+                  />
 
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
-                />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full mb-4 px-4 py-3 rounded-lg bg-gray-100 focus:bg-white focus:border focus:border-blue-500 outline-none"
+                  />
 
-                <Link 
-                  to="/dashboard" 
-                  onClick={() => {
-                    if (companyName) {
-                      localStorage.setItem("companyName", companyName);
-                    }
-                  }}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition mb-5 text-center"
-                >
-                  Create Account
-                </Link>
+                  {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+
+                  <button 
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition mb-5 text-center disabled:opacity-50"
+                  >
+                    {loading ? "Creating Account..." : "Create Account"}
+                  </button>
+                </form>
 
                 <div className="flex items-center gap-3 mb-5">
                   <div className="flex-1 h-px bg-gray-200" />

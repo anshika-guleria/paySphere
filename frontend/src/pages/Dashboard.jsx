@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 // --- Dashboard Component ---
 const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpdate }) => (
@@ -262,6 +263,10 @@ export default function PaySphereDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex font-sans">
+      <Helmet>
+        <title>{activePage === "Dashboard" ? "Payroll Dashboard | PaySphere" : "Employee Management | PaySphere"}</title>
+        <meta name="description" content={`Manage ${companyName}'s payroll and employees with ease.`} />
+      </Helmet>
 
       {/* Sidebar Backdrop */}
       {isSidebarOpen && (
@@ -313,10 +318,6 @@ export default function PaySphereDashboard() {
         <div className="p-3 border-t border-gray-200 space-y-2">
           <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm">
             Run Payroll
-          </button>
-
-          <button className="w-full px-3 py-2 text-gray-500 text-sm hover:bg-gray-50 rounded-lg">
-            Help & Support
           </button>
         </div>
       </aside>
