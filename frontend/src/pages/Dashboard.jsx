@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import axios from "axios";
+import API_BASE_URL from "../utils/api";
 
 // --- Dashboard Component ---
-const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpdate, onAddEmployee }) => (
+const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpdate, onAddEmployee, totalPayout, employeeCount, loading }) => (
   <main className="p-4 sm:p-8">
     {/* Title */}
     <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
@@ -29,15 +31,15 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
         <p className="text-xs uppercase text-gray-400 font-bold mb-2">
           Total Monthly Payout
         </p>
-        <h2 className="text-2xl sm:text-3xl font-bold">₹12,45,000</h2>
-        <p className="text-green-500 text-sm mt-2">+4.2% vs last month</p>
+        <h2 className="text-2xl sm:text-3xl font-bold">₹{totalPayout.toLocaleString("en-IN")}</h2>
+        <p className="text-gray-400 text-sm mt-2">{employeeCount} employees on payroll</p>
       </div>
 
       <div className="w-full sm:w-64 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <p className="text-xs uppercase text-gray-400 font-bold mb-2">
           Employees
         </p>
-        <h2 className="text-3xl sm:text-4xl font-bold">24</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold">{employeeCount}</h2>
         <p className="text-gray-400 text-sm">Active this month</p>
       </div>
     </div>
@@ -56,35 +58,42 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
 
     {/* Grid */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {filtered.map((emp) => {
-        const isPending = emp.status === "Pending";
-
-        return (
-          <div key={emp.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4">
+      {loading ? (
+        <div className="col-span-full py-16 text-center text-gray-400 text-sm">Loading employees...</div>
+      ) : filtered.length === 0 && !search ? (
+        <div className="col-span-full py-16 text-center">
+          <p className="text-gray-400 text-lg font-semibold mb-2">No employees yet</p>
+          <p className="text-gray-400 text-sm mb-4">Add your first employee to get started with payroll.</p>
+          <button
+            onClick={onAddEmployee}
+            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition"
+          >
+            + Add Employee
+          </button>
+        </div>
+      ) : filtered.length === 0 && search ? (
+        <div className="col-span-full py-16 text-center text-gray-400 text-sm">No employees match "{search}"</div>
+      ) : (
+        filtered.map((emp) => (
+          <div key={emp._id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4">
             {/* Header */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div
                   className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold"
-                  style={{ backgroundColor: emp.color }}
+                  style={{ backgroundColor: AVATAR_COLORS[emp.fullName.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length] }}
                 >
-                  {getInitials(emp.name)}
+                  {getInitials(emp.fullName)}
                 </div>
 
                 <div>
-                  <p className="font-bold text-sm">{emp.name}</p>
-                  <p className="text-xs text-gray-400">{emp.role}</p>
+                  <p className="font-bold text-sm">{emp.fullName}</p>
+                  <p className="text-xs text-gray-400">{emp.role || "Employee"}</p>
                 </div>
               </div>
 
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded-md border ${
-                  isPending
-                    ? "bg-orange-50 text-orange-600 border-orange-200"
-                    : "bg-green-50 text-green-600 border-green-200"
-                }`}
-              >
-                {emp.status}
+              <span className="text-xs font-bold px-2 py-1 rounded-md border bg-green-50 text-green-600 border-green-200">
+                Active
               </span>
             </div>
 
@@ -93,7 +102,7 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
               <p className="text-xs text-gray-400 uppercase">
                 Base Salary
               </p>
-              <p className="text-lg font-bold">{emp.salary}</p>
+              <p className="text-lg font-bold">₹{Number(emp.monthlySalary).toLocaleString("en-IN")}</p>
             </div>
 
             {/* Button */}
@@ -104,31 +113,29 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
               + Add Update
             </button>
           </div>
-        );
-      })}
+        ))
+      )}
 
-      {/* Add Card */}
-      <div
-        onClick={onAddEmployee}
-        className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-45 hover:border-blue-500 hover:bg-indigo-50 cursor-pointer transition"
-      >
-        <p className="text-gray-400 font-semibold">+ Add Employee</p>
-      </div>
+      {/* Add Card - only show when we have employees or not loading */}
+      {!loading && (filtered.length > 0 || search) && (
+        <div
+          onClick={onAddEmployee}
+          className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-45 hover:border-blue-500 hover:bg-indigo-50 cursor-pointer transition"
+        >
+          <p className="text-gray-400 font-semibold">+ Add Employee</p>
+        </div>
+      )}
     </div>
   </main>
 );
 
-// --- Employees Component ---
-const EmployeeManagement = () => {
-  const employees = [
-    { id: 1, name: "Arjun Mehta", role: "Senior Developer", base: 120000, additions: 15400, deductions: 8200 },
-    { id: 2, name: "Priya Sharma", role: "Product Designer", base: 95000, additions: 5000, deductions: 2500 },
-    { id: 3, name: "Rohan Gupta", role: "Marketing Lead", base: 88000, additions: 0, deductions: 4400 },
-    { id: 4, name: "Anjali Kapoor", role: "HR Manager", base: 72000, additions: 2200, deductions: 3600 },
-  ];
+// --- Avatar Colors ---
+const AVATAR_COLORS = ["#6366F1", "#EC4899", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EF4444", "#14B8A6"];
 
+// --- Employees Component ---
+const EmployeeManagement = ({ employees, loading, onAddEmployee }) => {
   const fmt = (n) => "₹" + Math.abs(n).toLocaleString("en-IN");
-  const totalNet = employees.reduce((s, e) => s + e.base + e.additions - e.deductions, 0);
+  const totalNet = employees.reduce((s, e) => s + (e.monthlySalary || 0), 0);
 
   const initials = (name) =>
     name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
@@ -149,7 +156,7 @@ const EmployeeManagement = () => {
           </h1>
 
           <p className="text-sm text-gray-400">
-            Total Monthly Payout for <span className="text-gray-700 font-semibold">14 Employees</span>
+            Total Monthly Payout for <span className="text-gray-700 font-semibold">{employees.length} Employee{employees.length !== 1 ? "s" : ""}</span>
           </p>
         </div>
 
@@ -166,20 +173,34 @@ const EmployeeManagement = () => {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {employees.map(emp => {
-          const net = emp.base + emp.additions - emp.deductions;
-
-          return (
-            <div key={emp.id} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+        {loading ? (
+          <div className="col-span-full py-16 text-center text-gray-400 text-sm">Loading employees...</div>
+        ) : employees.length === 0 ? (
+          <div className="col-span-full py-16 text-center">
+            <p className="text-gray-400 text-lg font-semibold mb-2">No employees yet</p>
+            <p className="text-gray-400 text-sm mb-4">Add employees to see their salary breakdown here.</p>
+            <button
+              onClick={onAddEmployee}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition"
+            >
+              + Add Employee
+            </button>
+          </div>
+        ) : (
+          employees.map(emp => (
+            <div key={emp._id} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
               {/* Header */}
               <div className="flex justify-between items-center mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
-                    {initials(emp.name)}
+                  <div
+                    className="w-11 h-11 rounded-full text-white flex items-center justify-center font-bold"
+                    style={{ backgroundColor: AVATAR_COLORS[emp.fullName.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length] }}
+                  >
+                    {initials(emp.fullName)}
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-gray-900">{emp.name}</p>
-                    <p className="text-xs text-gray-400">{emp.role}</p>
+                    <p className="font-bold text-sm text-gray-900">{emp.fullName}</p>
+                    <p className="text-xs text-gray-400">{emp.role || "Employee"}</p>
                   </div>
                 </div>
 
@@ -192,22 +213,15 @@ const EmployeeManagement = () => {
               <div className="space-y-2 text-sm mb-5">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Base Salary</span>
-                  <span className="font-semibold">{fmt(emp.base)}</span>
+                  <span className="font-semibold">{fmt(emp.monthlySalary)}</span>
                 </div>
 
-                <div className="flex justify-between">
-                  <span className="text-green-600">+ Additions</span>
-                  <span className="text-green-600 font-semibold">
-                    + {fmt(emp.additions)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-red-600">− Deductions</span>
-                  <span className="text-red-600 font-semibold">
-                    - {fmt(emp.deductions)}
-                  </span>
-                </div>
+                {emp.overtimeRate > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Overtime Rate</span>
+                    <span className="font-semibold">{fmt(emp.overtimeRate)}/hr</span>
+                  </div>
+                )}
               </div>
 
               <div className="h-px bg-gray-200 mb-4" />
@@ -215,22 +229,27 @@ const EmployeeManagement = () => {
               {/* Net */}
               <div className="flex justify-between items-center">
                 <span className="text-xs uppercase text-gray-400 font-bold">
-                  Net Salary
+                  Monthly Salary
                 </span>
                 <span className="text-2xl font-semibold text-blue-600">
-                  {fmt(net)}
+                  {fmt(emp.monthlySalary)}
                 </span>
               </div>
             </div>
-          );
-        })}
+          ))
+        )}
 
-        {/* View More */}
-        <div className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-50 hover:border-blue-500 hover:bg-indigo-50 cursor-pointer">
-          <p className="text-gray-400 font-semibold">
-            + View more employees
-          </p>
-        </div>
+        {/* Add More */}
+        {!loading && employees.length > 0 && (
+          <div
+            onClick={onAddEmployee}
+            className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-50 hover:border-blue-500 hover:bg-indigo-50 cursor-pointer"
+          >
+            <p className="text-gray-400 font-semibold">
+              + Add more employees
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );
@@ -241,19 +260,35 @@ export default function PaySphereDashboard() {
   const [activePage, setActivePage] = useState("Dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const companyName = localStorage.getItem("companyName") || "Acme Corp";
+  const token = localStorage.getItem("token");
 
-  const employees = [
-    { id: 1, name: "Ravi Kumar", role: "Software Engineer", salary: "₹35,000", status: "Paid", color: "#6366F1" },
-    { id: 2, name: "Ananya Sharma", role: "Product Designer", salary: "₹52,000", status: "Paid", color: "#EC4899" },
-    { id: 3, name: "Vikram Singh", role: "Senior Lead", salary: "₹1,15,000", status: "Pending", color: "#F59E0B" },
-    { id: 4, name: "Priya Das", role: "Operations Manager", salary: "₹48,500", status: "Paid", color: "#10B981" },
-  ];
+  // Fetch employees from API
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/employees`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setEmployees(res.data.employees);
+      } catch (err) {
+        console.error("Failed to fetch employees:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (token) fetchEmployees();
+    else setLoading(false);
+  }, [token]);
+
+  const totalPayout = employees.reduce((sum, e) => sum + (e.monthlySalary || 0), 0);
 
   const filtered = employees.filter(
     (e) =>
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.role.toLowerCase().includes(search.toLowerCase())
+      e.fullName.toLowerCase().includes(search.toLowerCase()) ||
+      (e.role || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const getInitials = (name) =>
@@ -369,9 +404,12 @@ export default function PaySphereDashboard() {
             getInitials={getInitials} 
             onAddUpdate={() => navigate("/monthly-updates")}
             onAddEmployee={() => navigate("/add-employee")}
+            totalPayout={totalPayout}
+            employeeCount={employees.length}
+            loading={loading}
           />
         ) : (
-          <EmployeeManagement />
+          <EmployeeManagement employees={employees} loading={loading} onAddEmployee={() => navigate("/add-employee")} />
         )}
 
       </div>
