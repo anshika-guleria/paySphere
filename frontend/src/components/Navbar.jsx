@@ -11,7 +11,7 @@ export default function Navbar() {
         {/* Logo */}
         <div className="flex items-center gap-6">
           <div className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
-            <imgs
+            <img
               src="/logo.png"
               alt="PaySphere Logo"
               className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
