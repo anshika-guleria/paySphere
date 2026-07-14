@@ -6,14 +6,16 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-18 flex justify-between items-center">
 
         {/* Logo */}
         <div className="flex items-center gap-6">
           <div className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm sm:text-lg">
-              P
-            </div>
+            <img
+              src="/logo.png"
+              alt="PaySphere Logo"
+              className="w-14 h-14 sm:w-20 sm:h-20 object-contain"
+            />
             PaySphere
           </div>
 
@@ -28,13 +30,13 @@ export default function Navbar() {
 
         {/* Desktop Buttons */}
         <div className="hidden md:flex items-center gap-3 lg:gap-4">
-          <Link 
+          <Link
             to="/auth?mode=login"
             className="text-[15px] font-semibold px-4 py-2 hover:bg-gray-50 rounded-lg transition-colors"
           >
             Login
           </Link>
-          <Link 
+          <Link
             to="/auth?mode=signup"
             className="bg-blue-600 hover:bg-blue-700 text-white text-[15px] font-bold px-6 py-2.5 rounded-lg shadow-lg shadow-blue-200 transition-all active:scale-95"
           >
