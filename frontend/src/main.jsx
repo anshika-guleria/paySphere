@@ -8,8 +8,7 @@ import store from './store/store'
 import './index.css'
 import App from './App.jsx'
 
-// const GOOGLE_CLIENT_ID = "250441239388-ldget7kv1v1hvf6vm1r6b0p48fassv43.apps.googleusercontent.com";
-const GOOGLE_CLIENT_ID = "329344703197-7gu7fviouas679a29hu8ml116rb9id8j.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "250441239388-ldget7kv1v1hvf6vm1r6b0p48fassv43.apps.googleusercontent.com";
 
 const theme = createTheme({
   palette: {
