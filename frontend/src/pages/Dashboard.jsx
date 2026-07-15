@@ -534,7 +534,8 @@ export default function PaySphereDashboard() {
         </nav>
 
         <div className="p-3 border-t border-gray-200 space-y-2">
-          <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm">
+          <button onClick ={() => navigate("/monthly-updates")}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm">
             Run Payroll
           </button>
         </div>
