@@ -362,7 +362,7 @@ export default function MonthlyUpdates() {
             {/* Mobile Close Button */}
             <button 
               onClick={() => setIsSidebarOpen(false)}
-              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 8 }}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 8 }}
               className="md:hidden"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
