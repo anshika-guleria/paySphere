@@ -1,56 +1,56 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 
 // ── Icons ──────────────────────────────────────────────────────────────────
 const GridIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
   </svg>
 );
 const PeopleIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
 );
 const PersonPlusIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-    <circle cx="8.5" cy="7" r="4"/>
-    <line x1="20" y1="8" x2="20" y2="14"/>
-    <line x1="23" y1="11" x2="17" y2="11"/>
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="8.5" cy="7" r="4" />
+    <line x1="20" y1="8" x2="20" y2="14" />
+    <line x1="23" y1="11" x2="17" y2="11" />
   </svg>
 );
 const BellIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 );
 const HelpCircleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 const SupportIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 const CheckCircleIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-    <polyline points="22 4 12 14.01 9 11.01"/>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
 const ArrowRightIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12"/>
-    <polyline points="12 5 19 12 12 19"/>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
   </svg>
 );
 
@@ -94,7 +94,9 @@ export default function AddEmployee() {
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState({ defaultOvertimeRate: 0, defaultDailyRate: 0 });
   const [updatingSettings, setUpdatingSettings] = useState(false);
-
+  const [csvFile, setCsvFile] = useState(null);
+  const [uploadingCsv, setUploadingCsv] = useState(false);
+  const fileInputRef = useRef(null);
   // Recently added employees
   const [recentEmployees, setRecentEmployees] = useState([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
@@ -148,6 +150,46 @@ export default function AddEmployee() {
     }
   };
 
+  const handleCsvUpload = async () => {
+    if (!csvFile) {
+      setError("Please select a CSV file.");
+      return;
+    }
+
+    setUploadingCsv(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", csvFile);
+
+      const res = await api.post(
+        "/api/employees/import",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setSuccess(`${res.data.imported} employees imported successfully.`);
+
+      setCsvFile(null);
+
+      const recent = await api.get("/api/employees/recent");
+      setRecentEmployees(recent.data.employees);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "CSV import failed.");
+    } finally {
+      setUploadingCsv(false);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -236,11 +278,10 @@ export default function AddEmployee() {
                 }
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${
-                item.id === "employees"
-                  ? "bg-indigo-50 text-blue-600 font-semibold"
-                  : "text-gray-500 hover:bg-gray-50"
-              }`}
+              className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${item.id === "employees"
+                ? "bg-indigo-50 text-blue-600 font-semibold"
+                : "text-gray-500 hover:bg-gray-50"
+                }`}
             >
               {item.icon}
               {item.label}
@@ -365,7 +406,7 @@ export default function AddEmployee() {
                 {success && (
                   <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-600 text-sm font-medium flex items-center gap-2">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
                     {success}
                   </div>
@@ -384,6 +425,91 @@ export default function AddEmployee() {
               </form>
             </div>
 
+
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-sm font-bold text-gray-900 mb-2">
+                Bulk Upload Employees
+              </h3>
+
+              <p className="text-xs text-gray-500 mb-4">
+                Upload a CSV file to add multiple employees at once.
+              </p>
+
+              <div
+                className={`border-2 border-dashed rounded-xl p-5 text-center transition ${csvFile
+                    ? "border-green-400 bg-green-50"
+                    : "border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50"
+                  }`}
+              >
+                {!csvFile ? (
+                  <>
+                    <div className="text-3xl mb-2">📄</div>
+
+                    <p className="text-sm font-semibold text-gray-700">
+                      Choose CSV file
+                    </p>
+
+                    <p className="text-xs text-gray-400 mt-1 mb-3">
+                      Only .csv files are supported
+                    </p>
+
+                    <label className="inline-block cursor-pointer px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition">
+                      Browse File
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        hidden
+                        onChange={(e) =>
+                          setCsvFile(e.target.files?.[0] || null)
+                        }
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-3 border border-green-200">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="text-2xl">
+                        📄
+                      </div>
+
+                      <div className="text-left min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">
+                          {csvFile.name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {(csvFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCsvFile(null);
+
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = "";
+                        }
+                      }}
+                      className="ml-3 w-7 h-7 rounded-full bg-red-100 text-red-600 hover:bg-red-200 font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCsvUpload}
+                disabled={!csvFile || uploadingCsv}
+                className="mt-4 w-full py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                {uploadingCsv ? "Uploading..." : "Upload CSV"}
+              </button>
+            </div>
             {/* ── RIGHT: Sidebar Cards ── */}
             <div className="w-full lg:w-72 xl:w-80 flex flex-col gap-6">
 
@@ -440,6 +566,7 @@ export default function AddEmployee() {
                   <p className="text-gray-300 text-sm leading-relaxed">
                     You can bulk upload employees via CSV in the Settings menu for larger teams.
                   </p>
+
                 </div>
               </div>
             </div>
@@ -455,11 +582,11 @@ export default function AddEmployee() {
                 <h2 className="text-2xl font-bold text-gray-900">Payroll Settings</h2>
                 <p className="text-sm text-gray-500 mt-1">Set default rates for all employees.</p>
               </div>
-              
+
               <div className="p-7 space-y-6">
                 <div>
                   <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-2 block">Default Overtime Rate (₹ / hr)</span>
-                  <input 
+                  <input
                     type="number"
                     value={settings.defaultOvertimeRate}
                     onChange={(e) => setSettings({ ...settings, defaultOvertimeRate: parseFloat(e.target.value) || 0 })}
@@ -467,17 +594,7 @@ export default function AddEmployee() {
                   />
                 </div>
 
-                <div>
-                  <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-2 block">Default Daily Deduction (₹ / day)</span>
-                  <input 
-                    type="number"
-                    value={settings.defaultDailyRate}
-                    onChange={(e) => setSettings({ ...settings, defaultDailyRate: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-100 text-gray-900 font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500/20 border border-transparent outline-none transition"
-                  />
-                </div>
               </div>
-
               <div className="p-6 border-t border-gray-100 flex gap-3 justify-end">
                 <button onClick={() => setShowSettings(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
                 <button onClick={saveSettings} disabled={updatingSettings} className="px-6 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition disabled:opacity-50">
