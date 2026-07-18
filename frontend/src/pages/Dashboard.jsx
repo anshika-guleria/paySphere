@@ -2,18 +2,46 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import api from "../services/api";
-import { StatCardSkeleton, EmployeeCardSkeleton, EmployeeBreakdownSkeleton } from "../components/common/Skeleton";
+import {
+  StatCardSkeleton,
+  EmployeeCardSkeleton,
+  EmployeeBreakdownSkeleton,
+} from "../components/common/Skeleton";
 import EmptyState from "../components/common/EmptyState";
 
-
 // --- Dashboard Component ---
 // --- Dashboard Component ---
-const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpdate, onAddEmployee, totalPayout, employeeCount, loading, payrolls }) => {
+const DashboardOverview = ({
+  search,
+  setSearch,
+  filtered,
+  getInitials,
+  onAddUpdate,
+  onAddEmployee,
+  totalPayout,
+  employeeCount,
+  loading,
+  payrolls,
+}) => {
   // Build a map from employeeId to payroll data
   const payrollMap = {};
-  (payrolls || []).forEach(p => { payrollMap[p.employeeId] = p; });
+  (payrolls || []).forEach((p) => {
+    payrollMap[p.employeeId] = p;
+  });
 
   const fmt = (n) => "₹" + Math.abs(n).toLocaleString("en-IN");
+
+  const [gettingStarted, setGettingStarted] = useState(() => {
+    return localStorage.getItem("showGettingStartedCard") !== "false";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("showGettingStartedCard", gettingStarted);
+  }, [gettingStarted]);
+
+  function handleCloseBtn() {
+    setGettingStarted(false);
+  }
 
   return (
     <main className="p-4 sm:p-8">
@@ -21,7 +49,9 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
       <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
         <div>
           <p className="text-sm text-gray-400">Monthly Overview</p>
-          <h1 className="text-3xl sm:text-4xl font-serif text-gray-900">April 2026</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif text-gray-900">
+            April 2026
+          </h1>
         </div>
 
         <div className="flex gap-3 w-full sm:w-auto">
@@ -29,7 +59,7 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
             Reports
           </button>
 
-          <button 
+          <button
             onClick={onAddUpdate}
             className="flex-1 sm:flex-none px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold"
           >
@@ -53,20 +83,59 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
               <p className="text-xs uppercase text-gray-400 font-bold mb-2">
                 Total Monthly Payout
               </p>
-              <h2 className="text-2xl sm:text-3xl font-bold">₹{totalPayout.toLocaleString("en-IN")}</h2>
-              <p className="text-gray-400 text-sm mt-2">{employeeCount} employees on payroll</p>
+              <h2 className="text-2xl sm:text-3xl font-bold">
+                ₹{totalPayout.toLocaleString("en-IN")}
+              </h2>
+              <p className="text-gray-400 text-sm mt-2">
+                {employeeCount} employees on payroll
+              </p>
             </div>
 
             <div className="w-full sm:w-64 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <p className="text-xs uppercase text-gray-400 font-bold mb-2">
                 Employees
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold">{employeeCount}</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold">
+                {employeeCount}
+              </h2>
               <p className="text-gray-400 text-sm">Active this month</p>
             </div>
           </>
         )}
       </div>
+
+      {/* Getting Started */}
+      {gettingStarted && (
+        <div className="relative mx-auto my-8 max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={handleCloseBtn}
+            aria-label="Dismiss tutorial"
+            className="absolute right-4 top-4 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          >
+            ✕
+          </button>
+
+          <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+            Getting Started
+          </h2>
+
+          <p className="text-gray-600">
+            New to PaySphere? Watch this quick tutorial to learn how to navigate
+            the application and get started.
+          </p>
+
+          <a
+            href="https://youtu.be/N3SizOsiNGw"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition-colors duration-200 hover:bg-blue-700"
+          >
+            ▶ Watch Tutorial
+          </a>
+        </div>
+      )}
 
       {/* Search */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -108,24 +177,39 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
           filtered.map((emp) => {
             const p = payrollMap[emp._id];
             return (
-              <div key={emp._id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4">
+              <div
+                key={emp._id}
+                className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4"
+              >
                 {/* Header */}
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <div
                       className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: AVATAR_COLORS[emp.fullName.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length] }}
+                      style={{
+                        backgroundColor:
+                          AVATAR_COLORS[
+                            emp.fullName
+                              .split("")
+                              .reduce((a, c) => a + c.charCodeAt(0), 0) %
+                              AVATAR_COLORS.length
+                          ],
+                      }}
                     >
                       {getInitials(emp.fullName)}
                     </div>
 
                     <div>
                       <p className="font-bold text-sm">{emp.fullName}</p>
-                      <p className="text-xs text-gray-400">{emp.role || "Employee"}</p>
+                      <p className="text-xs text-gray-400">
+                        {emp.role || "Employee"}
+                      </p>
                     </div>
                   </div>
 
-                  <span className={`text-xs font-bold px-2 py-1 rounded-md border ${p ? "bg-green-50 text-green-600 border-green-200" : "bg-orange-50 text-orange-600 border-orange-200"}`}>
+                  <span
+                    className={`text-xs font-bold px-2 py-1 rounded-md border ${p ? "bg-green-50 text-green-600 border-green-200" : "bg-orange-50 text-orange-600 border-orange-200"}`}
+                  >
                     {p ? "Finalized" : "Pending"}
                   </span>
                 </div>
@@ -137,7 +221,9 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
                       {p ? "Net Salary" : "Base Salary"}
                     </p>
                     {p && (p.leaveDays > 0 || p.overtimeHours > 0) && (
-                      <span className="text-[10px] text-gray-400 font-medium">Incl. adjustments</span>
+                      <span className="text-[10px] text-gray-400 font-medium">
+                        Incl. adjustments
+                      </span>
                     )}
                   </div>
                   <p className="text-lg font-bold">
@@ -146,7 +232,7 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
                 </div>
 
                 {/* Button */}
-                <button 
+                <button
                   onClick={onAddUpdate}
                   className="border border-gray-200 rounded-lg py-2 text-blue-600 font-semibold hover:bg-indigo-50 transition-colors"
                 >
@@ -172,15 +258,32 @@ const DashboardOverview = ({ search, setSearch, filtered, getInitials, onAddUpda
 };
 
 // --- Avatar Colors ---
-const AVATAR_COLORS = ["#6366F1", "#EC4899", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EF4444", "#14B8A6"];
+const AVATAR_COLORS = [
+  "#6366F1",
+  "#EC4899",
+  "#F59E0B",
+  "#10B981",
+  "#3B82F6",
+  "#8B5CF6",
+  "#EF4444",
+  "#14B8A6",
+];
 
 // --- Employees Component ---
-const EmployeeManagement = ({ employees, loading, onAddEmployee, onAddUpdate, payrolls }) => {
+const EmployeeManagement = ({
+  employees,
+  loading,
+  onAddEmployee,
+  onAddUpdate,
+  payrolls,
+}) => {
   const fmt = (n) => "₹" + Math.abs(n).toLocaleString("en-IN");
 
   // Build a map from employeeId to payroll data
   const payrollMap = {};
-  (payrolls || []).forEach(p => { payrollMap[p.employeeId] = p; });
+  (payrolls || []).forEach((p) => {
+    payrollMap[p.employeeId] = p;
+  });
 
   const totalNet = employees.reduce((s, e) => {
     const p = payrollMap[e._id];
@@ -188,7 +291,12 @@ const EmployeeManagement = ({ employees, loading, onAddEmployee, onAddUpdate, pa
   }, 0);
 
   const initials = (name) =>
-    name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    name
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
   return (
     <main className="p-4 sm:p-8">
@@ -206,7 +314,10 @@ const EmployeeManagement = ({ employees, loading, onAddEmployee, onAddUpdate, pa
           </h1>
 
           <p className="text-sm text-gray-400">
-            Total Monthly Payout for <span className="text-gray-700 font-semibold">{employees.length} Employee{employees.length !== 1 ? "s" : ""}</span>
+            Total Monthly Payout for{" "}
+            <span className="text-gray-700 font-semibold">
+              {employees.length} Employee{employees.length !== 1 ? "s" : ""}
+            </span>
           </p>
         </div>
 
@@ -244,27 +355,44 @@ const EmployeeManagement = ({ employees, loading, onAddEmployee, onAddUpdate, pa
             }
           />
         ) : (
-          employees.map(emp => {
+          employees.map((emp) => {
             const p = payrollMap[emp._id];
 
             return (
-              <div key={emp._id} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div
+                key={emp._id}
+                className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition"
+              >
                 {/* Header */}
                 <div className="flex justify-between items-center mb-5">
                   <div className="flex items-center gap-3">
                     <div
                       className="w-11 h-11 rounded-full text-white flex items-center justify-center font-bold"
-                      style={{ backgroundColor: AVATAR_COLORS[emp.fullName.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length] }}
+                      style={{
+                        backgroundColor:
+                          AVATAR_COLORS[
+                            emp.fullName
+                              .split("")
+                              .reduce((a, c) => a + c.charCodeAt(0), 0) %
+                              AVATAR_COLORS.length
+                          ],
+                      }}
                     >
                       {initials(emp.fullName)}
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-gray-900">{emp.fullName}</p>
-                      <p className="text-xs text-gray-400">{emp.role || "Employee"}</p>
+                      <p className="font-bold text-sm text-gray-900">
+                        {emp.fullName}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {emp.role || "Employee"}
+                      </p>
                     </div>
                   </div>
 
-                  <span className={`text-xs font-bold px-2 py-1 rounded-md border ${p ? "bg-green-50 text-green-600 border-green-200" : "bg-orange-50 text-orange-600 border-orange-200"}`}>
+                  <span
+                    className={`text-xs font-bold px-2 py-1 rounded-md border ${p ? "bg-green-50 text-green-600 border-green-200" : "bg-orange-50 text-orange-600 border-orange-200"}`}
+                  >
                     {p ? "Finalized" : "Pending"}
                   </span>
                 </div>
@@ -273,34 +401,49 @@ const EmployeeManagement = ({ employees, loading, onAddEmployee, onAddUpdate, pa
                 <div className="space-y-2 text-sm mb-5">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Base Salary</span>
-                    <span className="font-semibold">{fmt(emp.monthlySalary)}</span>
+                    <span className="font-semibold">
+                      {fmt(emp.monthlySalary)}
+                    </span>
                   </div>
 
                   {p && p.leaveDays > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-red-600">− {p.leaveDays} day{p.leaveDays > 1 ? "s" : ""} leave</span>
-                      <span className="text-red-600 font-semibold">- {fmt(p.leaveDeduction)}</span>
+                      <span className="text-red-600">
+                        − {p.leaveDays} day{p.leaveDays > 1 ? "s" : ""} leave
+                      </span>
+                      <span className="text-red-600 font-semibold">
+                        - {fmt(p.leaveDeduction)}
+                      </span>
                     </div>
                   )}
 
                   {p && p.overtimeHours > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-blue-600">+ {p.overtimeHours} hr{p.overtimeHours > 1 ? "s" : ""} overtime</span>
-                      <span className="text-blue-600 font-semibold">+ {fmt(p.overtimePay)}</span>
+                      <span className="text-blue-600">
+                        + {p.overtimeHours} hr{p.overtimeHours > 1 ? "s" : ""}{" "}
+                        overtime
+                      </span>
+                      <span className="text-blue-600 font-semibold">
+                        + {fmt(p.overtimePay)}
+                      </span>
                     </div>
                   )}
 
                   {p && p.bonus > 0 && (
                     <div className="flex justify-between">
                       <span className="text-green-600">+ Bonus</span>
-                      <span className="text-green-600 font-semibold">+ {fmt(p.bonus)}</span>
+                      <span className="text-green-600 font-semibold">
+                        + {fmt(p.bonus)}
+                      </span>
                     </div>
                   )}
 
                   {p && p.deductions > 0 && (
                     <div className="flex justify-between">
                       <span className="text-red-600">− Deductions</span>
-                      <span className="text-red-600 font-semibold">- {fmt(p.deductions)}</span>
+                      <span className="text-red-600 font-semibold">
+                        - {fmt(p.deductions)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -327,9 +470,7 @@ const EmployeeManagement = ({ employees, loading, onAddEmployee, onAddUpdate, pa
             onClick={onAddEmployee}
             className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-50 hover:border-blue-500 hover:bg-indigo-50 cursor-pointer"
           >
-            <p className="text-gray-400 font-semibold">
-              + Add more employees
-            </p>
+            <p className="text-gray-400 font-semibold">+ Add more employees</p>
           </div>
         )}
       </div>
@@ -346,7 +487,10 @@ export default function PaySphereDashboard() {
   const [loading, setLoading] = useState(true);
   const [payrolls, setPayrolls] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState({ defaultOvertimeRate: 0, defaultDailyRate: 0 });
+  const [settings, setSettings] = useState({
+    defaultOvertimeRate: 0,
+    defaultDailyRate: 0,
+  });
   const [updatingSettings, setUpdatingSettings] = useState(false);
   const companyName = localStorage.getItem("companyName") || "Acme Corp";
   const token = localStorage.getItem("token");
@@ -400,7 +544,9 @@ export default function PaySphereDashboard() {
   };
 
   const payrollMap = {};
-  payrolls.forEach(p => { payrollMap[p.employeeId] = p; });
+  payrolls.forEach((p) => {
+    payrollMap[p.employeeId] = p;
+  });
 
   const totalPayout = employees.reduce((sum, e) => {
     const p = payrollMap[e._id];
@@ -410,7 +556,7 @@ export default function PaySphereDashboard() {
   const filtered = employees.filter(
     (e) =>
       e.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      (e.role || "").toLowerCase().includes(search.toLowerCase())
+      (e.role || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const getInitials = (name) =>
@@ -424,20 +570,29 @@ export default function PaySphereDashboard() {
   return (
     <div className="min-h-screen bg-gray-100 flex font-sans">
       <Helmet>
-        <title>{activePage === "Dashboard" ? "Payroll Dashboard | PaySphere" : "Employee Management | PaySphere"}</title>
-        <meta name="description" content={`Manage ${companyName}'s payroll and employees with ease.`} />
+        <title>
+          {activePage === "Dashboard"
+            ? "Payroll Dashboard | PaySphere"
+            : "Employee Management | PaySphere"}
+        </title>
+        <meta
+          name="description"
+          content={`Manage ${companyName}'s payroll and employees with ease.`}
+        />
       </Helmet>
 
       {/* Sidebar Backdrop */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`w-56 bg-white border-r border-gray-200 fixed inset-y-0 left-0 flex flex-col z-50 transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+      <aside
+        className={`w-56 bg-white border-r border-gray-200 fixed inset-y-0 left-0 flex flex-col z-50 transition-transform duration-300 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
         <div className="p-5 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
@@ -448,7 +603,7 @@ export default function PaySphereDashboard() {
               <p className="text-xs text-gray-400">Payroll ID: 8821</p>
             </div>
           </div>
-          <button 
+          <button
             className="md:hidden p-2 text-gray-400 hover:text-gray-600"
             onClick={() => setIsSidebarOpen(false)}
           >
@@ -488,17 +643,18 @@ export default function PaySphereDashboard() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col md:ml-56 transition-all duration-300">
-
         {/* Topbar */}
         <header className="h-16 bg-white border-b border-gray-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4 sm:gap-6">
-            <button 
+            <button
               className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-700"
               onClick={() => setIsSidebarOpen(true)}
             >
               ☰
             </button>
-            <span className="font-bold text-blue-900 truncate">Ledger Payroll</span>
+            <span className="font-bold text-blue-900 truncate">
+              Ledger Payroll
+            </span>
             <button className="hidden sm:block text-blue-600 font-semibold border-b-2 border-blue-600 pb-0.5 whitespace-nowrap">
               April 2026
             </button>
@@ -523,11 +679,11 @@ export default function PaySphereDashboard() {
 
         {/* Dynamic Content */}
         {activePage === "Dashboard" ? (
-          <DashboardOverview 
-            search={search} 
-            setSearch={setSearch} 
-            filtered={filtered} 
-            getInitials={getInitials} 
+          <DashboardOverview
+            search={search}
+            setSearch={setSearch}
+            filtered={filtered}
+            getInitials={getInitials}
             onAddUpdate={() => navigate("/monthly-updates")}
             onAddEmployee={() => navigate("/add-employee")}
             totalPayout={totalPayout}
@@ -536,54 +692,185 @@ export default function PaySphereDashboard() {
             payrolls={payrolls}
           />
         ) : (
-          <EmployeeManagement employees={employees} loading={loading} onAddEmployee={() => navigate("/add-employee")} onAddUpdate={() => navigate("/monthly-updates")} payrolls={payrolls} />
+          <EmployeeManagement
+            employees={employees}
+            loading={loading}
+            onAddEmployee={() => navigate("/add-employee")}
+            onAddUpdate={() => navigate("/monthly-updates")}
+            payrolls={payrolls}
+          />
         )}
 
         {/* Settings Modal */}
         {showSettings && (
-          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }} onClick={() => setShowSettings(false)}>
-            <div style={{ background: "white", borderRadius: 20, width: "92%", maxWidth: 450, padding: 0, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }} onClick={e => e.stopPropagation()}>
-              <div style={{ padding: "28px 28px 20px", borderBottom: "1.5px solid #F0F1F3" }}>
-                <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111827", margin: 0 }}>Payroll Settings</h2>
-                <p style={{ fontSize: 14, color: "#6B7280", margin: "8px 0 0" }}>Set default rates for all employees.</p>
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 100,
+              backdropFilter: "blur(4px)",
+            }}
+            onClick={() => setShowSettings(false)}
+          >
+            <div
+              style={{
+                background: "white",
+                borderRadius: 20,
+                width: "92%",
+                maxWidth: 450,
+                padding: 0,
+                overflow: "hidden",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  padding: "28px 28px 20px",
+                  borderBottom: "1.5px solid #F0F1F3",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 700,
+                    color: "#111827",
+                    margin: 0,
+                  }}
+                >
+                  Payroll Settings
+                </h2>
+                <p
+                  style={{ fontSize: 14, color: "#6B7280", margin: "8px 0 0" }}
+                >
+                  Set default rates for all employees.
+                </p>
               </div>
-              
+
               <div style={{ padding: "24px 28px" }}>
                 <label style={{ display: "block", marginBottom: 20 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8, display: "block" }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#9CA3AF",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      marginBottom: 8,
+                      display: "block",
+                    }}
+                  >
                     Default Overtime Rate (₹ / hr)
                   </span>
-                  <input 
+                  <input
                     type="number"
                     value={settings.defaultOvertimeRate}
-                    onChange={(e) => setSettings({ ...settings, defaultOvertimeRate: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "12px 16px", background: "#F3F4F6", border: "1.5px solid transparent", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#111827", outline: "none" }}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        defaultOvertimeRate: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      background: "#F3F4F6",
+                      border: "1.5px solid transparent",
+                      borderRadius: 12,
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: "#111827",
+                      outline: "none",
+                    }}
                   />
                 </label>
 
                 <label style={{ display: "block", marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8, display: "block" }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#9CA3AF",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      marginBottom: 8,
+                      display: "block",
+                    }}
+                  >
                     Default Daily Deduction (₹ / day)
                   </span>
-                  <input 
+                  <input
                     type="number"
                     value={settings.defaultDailyRate}
-                    onChange={(e) => setSettings({ ...settings, defaultDailyRate: parseFloat(e.target.value) || 0 })}
-                    style={{ width: "100%", padding: "12px 16px", background: "#F3F4F6", border: "1.5px solid transparent", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#111827", outline: "none" }}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        defaultDailyRate: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      background: "#F3F4F6",
+                      border: "1.5px solid transparent",
+                      borderRadius: 12,
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: "#111827",
+                      outline: "none",
+                    }}
                   />
                 </label>
               </div>
 
-              <div style={{ padding: "16px 28px 24px", borderTop: "1.5px solid #F0F1F3", display: "flex", gap: 12, justifyContent: "flex-end" }}>
-                <button onClick={() => setShowSettings(false)} style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid #E5E7EB", background: "white", fontSize: 14, fontWeight: 600, color: "#374151", cursor: "pointer" }}>Cancel</button>
-                <button onClick={saveSettings} disabled={updatingSettings} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "#2563EB", color: "white", fontSize: 14, fontWeight: 700, cursor: updatingSettings ? "not-allowed" : "pointer" }}>
+              <div
+                style={{
+                  padding: "16px 28px 24px",
+                  borderTop: "1.5px solid #F0F1F3",
+                  display: "flex",
+                  gap: 12,
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  onClick={() => setShowSettings(false)}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: 10,
+                    border: "1.5px solid #E5E7EB",
+                    background: "white",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "#374151",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveSettings}
+                  disabled={updatingSettings}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: "#2563EB",
+                    color: "white",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: updatingSettings ? "not-allowed" : "pointer",
+                  }}
+                >
                   {updatingSettings ? "Saving..." : "Save Settings"}
                 </button>
               </div>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

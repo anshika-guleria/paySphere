@@ -1,11 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Landing from "./pages/Landing"
-import LoginSignUp from "./pages/LoginSignUp"
-import Dashboard from "./pages/Dashboard"
-import MonthlyUpdates from "./pages/MonthlyUpdates"
-import AddEmployee from "./pages/AddEmployee"
-
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
+import LoginSignUp from "./pages/LoginSignUp";
+import Dashboard from "./pages/Dashboard";
+import MonthlyUpdates from "./pages/MonthlyUpdates";
+import AddEmployee from "./pages/AddEmployee";
 
 function App() {
   return (
@@ -17,10 +15,8 @@ function App() {
         <Route path="/monthly-updates" element={<MonthlyUpdates />} />
         <Route path="/add-employee" element={<AddEmployee />} />
       </Routes>
-
-
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
