@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
 import api from "../services/api";
 
@@ -29,12 +29,12 @@ const PersonPlusIcon = () => (
 );
 const BellIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 );
 const HelpCircleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 const SupportIcon = () => (
@@ -90,6 +90,7 @@ export default function AddEmployee() {
 
   // Form state
   const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState("");
   const [monthlySalary, setMonthlySalary] = useState("");
   const [overtimeRate, setOvertimeRate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -210,6 +211,7 @@ export default function AddEmployee() {
     try {
       await api.post(`/api/employees`, {
         fullName,
+        role,
         monthlySalary: salaryNum,
         overtimeRate: otNum,
       });
@@ -289,11 +291,10 @@ export default function AddEmployee() {
                 }
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${
-                item.id === "employees"
+              className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${item.id === "employees"
                   ? "bg-indigo-50 dark:bg-indigo-950/30 text-blue-600 dark:text-blue-400 font-semibold"
                   : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50"
-              }`}
+                }`}
             >
               {item.icon}
               {item.label}
@@ -375,6 +376,22 @@ export default function AddEmployee() {
                     className="w-full px-4 py-3.5 rounded-xl bg-gray-100 dark:bg-slate-950 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 border border-transparent dark:border-slate-800 outline-none transition text-sm"
                   />
                 </label>
+                {/* Role */}
+                <label className="block mb-5">
+                  <span className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider mb-2 block">
+                    Role
+                  </span>
+
+                  <input
+                    id="employee-role"
+                    type="text"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    placeholder="e.g. Software Engineer"
+                    required
+                    className="w-full px-4 py-3.5 rounded-xl bg-gray-100 dark:bg-slate-950 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 border border-transparent dark:border-slate-800 outline-none transition text-sm"
+                  />
+                </label>
 
                 {/* Salary Row */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -450,8 +467,8 @@ export default function AddEmployee() {
 
               <div
                 className={`border-2 border-dashed rounded-xl p-5 text-center transition ${csvFile
-                    ? "border-green-400 bg-green-50"
-                    : "border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50"
+                  ? "border-green-400 bg-green-50"
+                  : "border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50"
                   }`}
               >
                 {!csvFile ? (
@@ -599,7 +616,7 @@ export default function AddEmployee() {
               <div className="p-7 space-y-6">
                 <div>
                   <span className="text-[10px] font-bold uppercase text-gray-400 dark:text-slate-400 tracking-wider mb-2 block">Default Overtime Rate (₹ / hr)</span>
-                  <input 
+                  <input
                     type="number"
                     value={settings.defaultOvertimeRate}
                     onChange={(e) => setSettings({ ...settings, defaultOvertimeRate: parseFloat(e.target.value) || 0 })}
@@ -609,7 +626,7 @@ export default function AddEmployee() {
 
                 <div>
                   <span className="text-[10px] font-bold uppercase text-gray-400 dark:text-slate-400 tracking-wider mb-2 block">Default Daily Deduction (₹ / day)</span>
-                  <input 
+                  <input
                     type="number"
                     value={settings.defaultDailyRate}
                     onChange={(e) => setSettings({ ...settings, defaultDailyRate: parseFloat(e.target.value) || 0 })}

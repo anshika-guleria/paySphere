@@ -201,3 +201,32 @@ exports.importEmployees = async (req, res) => {
     });
   }
 };
+
+// DELETE EMPLOYEE
+exports.deleteEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const employee = await Employee.findOne({
+      _id: id,
+      createdBy: req.userId,
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        message: "Employee not found",
+      });
+    }
+
+    await Employee.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};

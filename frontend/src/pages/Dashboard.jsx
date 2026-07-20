@@ -1,8 +1,8 @@
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import EmptyState from '../components/common/EmptyState';
 import {
@@ -24,6 +24,7 @@ const DashboardOverview = ({
   employeeCount,
   loading,
   payrolls,
+  onDelete,
 }) => {
   // Build a map from employeeId to payroll data
   const payrollMap = {};
@@ -199,10 +200,10 @@ const DashboardOverview = ({
                       style={{
                         backgroundColor:
                           AVATAR_COLORS[
-                            emp.fullName
-                              .split('')
-                              .reduce((a, c) => a + c.charCodeAt(0), 0) %
-                              AVATAR_COLORS.length
+                          emp.fullName
+                            .split('')
+                            .reduce((a, c) => a + c.charCodeAt(0), 0) %
+                          AVATAR_COLORS.length
                           ],
                       }}
                     >
@@ -244,13 +245,23 @@ const DashboardOverview = ({
                 </div>
 
                 {/* Button */}
+
                 <button
                   onClick={onAddUpdate}
-                  className="border border-gray-200 dark:border-slate-800 rounded-lg py-2 text-blue-600 dark:text-blue-400 font-semibold hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
+                  className="flex-1 border border-gray-200 dark:border-slate-800 rounded-lg py-2 text-blue-600 dark:text-blue-400 font-semibold hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  {p ? 'Edit Updates' : '+ Add Update'}
+                  {p ? "Edit Updates" : "+ Add Update"}
                 </button>
+
+              <button
+  onClick={() => onDelete(emp)}
+  className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 font-medium text-red-600 transition-colors hover:border-red-300 hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-900/30"
+>
+  <span role="img" aria-hidden="true">🗑️</span>
+  <span>Delete</span>
+</button>
               </div>
+
             );
           })
         )}
@@ -392,10 +403,10 @@ const EmployeeManagement = ({
                       style={{
                         backgroundColor:
                           AVATAR_COLORS[
-                            emp.fullName
-                              .split('')
-                              .reduce((a, c) => a + c.charCodeAt(0), 0) %
-                              AVATAR_COLORS.length
+                          emp.fullName
+                            .split('')
+                            .reduce((a, c) => a + c.charCodeAt(0), 0) %
+                          AVATAR_COLORS.length
                           ],
                       }}
                     >
@@ -548,7 +559,23 @@ const EmployeeManagement = ({
           >
             Next
           </button>
+          <div className="mt-5">
+            <button
+              onClick={() => onDelete(emp)}
+              className="w-full rounded-lg border border-red-300 py-2 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors"
+            >
+              Delete Employee
+            </button>
+          </div><div className="mt-5">
+            <button
+              onClick={() => onDelete(emp)}
+              className="w-full rounded-lg border border-red-300 py-2 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors"
+            >
+              Delete Employee
+            </button>
+          </div>
         </div>
+
       )}
     </main>
   );
@@ -573,6 +600,9 @@ export default function PaySphereDashboard() {
     defaultDailyRate: 0,
   });
   const [updatingSettings, setUpdatingSettings] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const companyName = localStorage.getItem('companyName') || 'Acme Corp';
   const token = localStorage.getItem('token');
 
@@ -620,6 +650,31 @@ export default function PaySphereDashboard() {
       alert('Failed to save settings');
     } finally {
       setUpdatingSettings(false);
+    }
+  };
+  const handleDeleteEmployee = async () => {
+    if (!employeeToDelete) return;
+
+    setDeleting(true);
+
+    try {
+      await api.delete(`/api/employees/${employeeToDelete._id}`);
+
+      setEmployees((prev) =>
+        prev.filter((emp) => emp._id !== employeeToDelete._id)
+      );
+
+      setPayrolls((prev) =>
+        prev.filter((p) => p.employeeId !== employeeToDelete._id)
+      );
+
+      setDeleteModalOpen(false);
+      setEmployeeToDelete(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete employee.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -707,11 +762,10 @@ export default function PaySphereDashboard() {
                 }
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${
-                activePage === item
+              className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${activePage === item
                   ? 'bg-indigo-50 dark:bg-indigo-950/30 text-blue-600 dark:text-blue-400 font-semibold'
                   : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'
-              }`}
+                }`}
             >
               {item}
             </button>
@@ -778,6 +832,10 @@ export default function PaySphereDashboard() {
             employeeCount={employees.length}
             loading={loading}
             payrolls={payrolls}
+            onDelete={(employee) => {
+              setEmployeeToDelete(employee);
+              setDeleteModalOpen(true);
+            }}
           />
         ) : (
           <EmployeeManagement
@@ -972,6 +1030,40 @@ export default function PaySphereDashboard() {
                   }}
                 >
                   {updatingSettings ? 'Saving...' : 'Save Settings'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {deleteModalOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110]">
+            <div className="w-full max-w-md rounded-xl bg-white dark:bg-slate-900 p-6 shadow-xl">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                Delete Employee
+              </h2>
+
+              <p className="mt-3 text-slate-600 dark:text-slate-400">
+                Are you sure you want to delete{" "}
+                <strong>{employeeToDelete?.fullName}</strong>?
+              </p>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setDeleteModalOpen(false);
+                    setEmployeeToDelete(null);
+                  }}
+                  className="rounded-lg border border-gray-300 px-4 py-2"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleDeleteEmployee}
+                  disabled={deleting}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                >
+                  {deleting ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>
