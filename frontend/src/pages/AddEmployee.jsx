@@ -82,8 +82,7 @@ const Avatar = ({ name, size = 36 }) => {
 
 export default function AddEmployee() {
   const navigate = useNavigate();
-  const themeMode = useSelector((state) => state.ui.themeMode);
-  const isDark = themeMode === "dark";
+
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const companyName = localStorage.getItem("companyName") || "Acme Corp";
@@ -96,9 +95,7 @@ export default function AddEmployee() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState({ defaultOvertimeRate: 0, defaultDailyRate: 0 });
-  const [updatingSettings, setUpdatingSettings] = useState(false);
+
   const [csvFile, setCsvFile] = useState(null);
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const fileInputRef = useRef(null);
@@ -122,36 +119,13 @@ export default function AddEmployee() {
 
   useEffect(() => {
     if (token) {
-      fetchRecent();
+      setTimeout(() => { fetchRecent(); }, 0);
     } else {
-      setLoadingRecent(false);
+      setTimeout(() => setLoadingRecent(false), 0);
     }
   }, [token]);
 
-  // Fetch settings
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await api.get(`/api/auth/settings`);
-        setSettings(res.data);
-      } catch (err) {
-        console.error("Failed to fetch settings:", err);
-      }
-    };
-    if (token) fetchSettings();
-  }, [token]);
 
-  const saveSettings = async () => {
-    setUpdatingSettings(true);
-    try {
-      await api.put(`/api/auth/settings`, settings);
-      setShowSettings(false);
-    } catch (err) {
-      alert("Failed to save settings");
-    } finally {
-      setUpdatingSettings(false);
-    }
-  };
 
   const handleCsvUpload = async () => {
     if (!csvFile) {
@@ -231,7 +205,7 @@ export default function AddEmployee() {
   const sidebarItems = [
     { id: "dashboard", label: "Dashboard", path: "/dashboard", icon: <GridIcon /> },
     { id: "employees", label: "Employees", path: "/dashboard?tab=employees", icon: <PeopleIcon /> },
-    { id: "settings", label: "Payroll Settings", path: "#", icon: <SupportIcon /> }, // will open modal
+    { id: "settings", label: "Settings", path: "/settings", icon: <SupportIcon /> },
   ];
 
   const getInitials = (name) =>
@@ -284,11 +258,7 @@ export default function AddEmployee() {
             <button
               key={item.id}
               onClick={() => {
-                if (item.id === "settings") {
-                  setShowSettings(true);
-                } else {
-                  navigate(item.path);
-                }
+                navigate(item.path);
                 setIsSidebarOpen(false);
               }}
               className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition ${item.id === "employees"
@@ -585,7 +555,7 @@ export default function AddEmployee() {
               </div>
 
               {/* Speed Tip Card */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 via-gray-900 to-gray-950 p-6 text-white shadow-lg">
+              <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-gray-800 via-gray-900 to-gray-950 p-6 text-white shadow-lg">
                 {/* Decorative circles */}
                 <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
                 <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/5" />
