@@ -760,6 +760,15 @@ export default function MonthlyUpdates() {
                 {/* Modal Footer */}
                 <div style={{ padding:"16px 28px 24px", borderTop: isDark ? "1.5px solid #1e293b" : "1.5px solid #F0F1F3", display:"flex", gap:12, justifyContent:"flex-end" }}>
                   <button
+                    onClick={() => { const now = new Date(); fetch(`/api/payroll/export-csv?month=${now.getMonth()+1}&year=${now.getFullYear()}`, { headers: { Authorization: `Bearer ${token}` } }).then(r=>r.ok?r.blob():null).then(b=>{if(!b){alert('No data to export');return;}const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`payroll-${now.getMonth()+1}-${now.getFullYear()}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);}).catch(()=>alert('Export failed.')); }}
+                    style={{
+                      padding:"11px 24px", borderRadius:10,
+                      border: isDark ? "1.5px solid #334155" : "1.5px solid #E5E7EB", background: isDark ? "#1e293b" : "white",
+                      fontFamily:"'DM Sans',sans-serif", fontSize:14, fontWeight:600,
+                      color: isDark ? "#cbd5e1" : "#374151", cursor:"pointer",
+                    }}
+                  >Export CSV</button>
+                  <button
                     onClick={() => setShowResults(false)}
                     style={{
                       padding:"11px 24px", borderRadius:10,
