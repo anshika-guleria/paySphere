@@ -1,6 +1,6 @@
 /* eslint-env node */
 
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
 /**
  * Vercel Serverless Function — Email Proxy
@@ -17,58 +17,93 @@ import nodemailer from "nodemailer";
  */
 export default async function handler(req, res) {
   // Only allow POST
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { to, subject, text, html } = req.body || {};
+  const { to, subject, text, html, attachments } = req.body || {};
 
   // Validate required fields
   if (!to || !subject || (!text && !html)) {
     return res.status(400).json({
-      error: "Missing required fields: to, subject, and at least one of text or html",
+      error:
+        'Missing required fields: to, subject, and at least one of text or html',
     });
   }
 
   // Check SMTP configuration
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log("\n================================================================");
-    console.log("📬 [VERCEL EMAIL PROXY] SMTP not configured — logging instead.");
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS
+  ) {
+    console.log(
+      '\n================================================================',
+    );
+    console.log(
+      '📬 [VERCEL EMAIL PROXY] SMTP not configured — logging instead.',
+    );
     console.log(`To:      ${to}`);
     console.log(`Subject: ${subject}`);
-    console.log("----------------------------------------------------------------");
+    if (attachments && attachments.length > 0) {
+      console.log(
+        `Attachments: ${attachments.map((a) => a.filename).join(', ')}`,
+      );
+    }
+    console.log(
+      '----------------------------------------------------------------',
+    );
     console.log(`Text:\n${text}`);
     if (html) {
-      console.log("----------------------------------------------------------------");
+      console.log(
+        '----------------------------------------------------------------',
+      );
       console.log(`HTML:\n${html}`);
     }
-    console.log("================================================================\n");
+    console.log(
+      '================================================================\n',
+    );
     return res.status(200).json({ success: true, logged: true });
   }
 
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || "587", 10),
-      secure: process.env.SMTP_SECURE === "true",
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
 
-    await transporter.sendMail({
+    const mailOptions = {
       from: process.env.EMAIL_FROM || '"PaySphere" <no-reply@paysphere.com>',
       to,
       subject,
       text,
       html,
-    });
+    };
+
+    if (attachments && Array.isArray(attachments)) {
+      mailOptions.attachments = attachments.map((att) => {
+        let contentBuffer = att.content;
+        if (typeof att.content === 'string') {
+          contentBuffer = Buffer.from(att.content, 'base64');
+        }
+        return {
+          filename: att.filename,
+          content: contentBuffer,
+        };
+      });
+    }
+
+    await transporter.sendMail(mailOptions);
 
     console.log(`✅ Email sent to ${to} via Vercel Email Proxy`);
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error("❌ Vercel Email Proxy failed:", error.message);
-    return res.status(500).json({ error: "Failed to send email" });
+    console.error('❌ Vercel Email Proxy failed:', error.message);
+    return res.status(500).json({ error: 'Failed to send email' });
   }
 }
