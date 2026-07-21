@@ -2,6 +2,7 @@ const Employee = require("../models/employee.model");
 const PayrollUpdate = require("../models/payroll.model");
 const User = require("../models/user.model");
 const { calculateNetSalary } = require("../utils/salaryCalculator");
+const { generatePayrollCSV } = require("../utils/csvExport");
 
 // Helper: parse tag labels back into structured numbers
 function parseTagValue(label) {
@@ -148,6 +149,29 @@ exports.getPayrollSummary = async (req, res) => {
   }
 };
 
+// EXPORT PAYROLL AS CSV
+exports.exportPayrollCSV = async (req, res) => {
+  try {
+    const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+
+    const payrolls = await PayrollUpdate.find({
+      createdBy: req.userId,
+      month,
+      year,
+    }).sort({ employeeName: 1 });
+
+    if (payrolls.length === 0) {
+      return res.status(404).json({ message: "No payroll data found for the selected month." });
+    }
+
+    const csvData = generatePayrollCSV(payrolls, month, year);
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename=payroll-${month}-${year}.csv`);
+    res.status(200).send(csvData);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
 const { sendPayslipEmail } = require("../services/email.service");
 
 // SEND PAYSLIP EMAIL manually
