@@ -128,19 +128,31 @@ exports.updateSettings = async (req, res) => {
       return res.status(400).json({ message: "Default rates must be non-negative numbers" });
     }
 
-    const updateFields = {};
-    if (defaultOvertimeRate !== undefined) updateFields.defaultOvertimeRate = defaultOvertimeRate;
-    if (defaultDailyRate !== undefined) updateFields.defaultDailyRate = defaultDailyRate;
+    if (fullName) user.fullName = fullName;
+    if (email) user.email = email;
+    if (companyName) user.companyName = companyName;
+    if (defaultOvertimeRate !== undefined) user.defaultOvertimeRate = defaultOvertimeRate;
+    if (defaultDailyRate !== undefined) user.defaultDailyRate = defaultDailyRate;
+    if (avatar !== undefined) user.avatar = avatar;
 
-    const user = await User.findByIdAndUpdate(
-      req.userId,
-      updateFields,
-      { new: true, runValidators: true }
-    );
+    if (!user.settings) user.settings = {};
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (settings) {
+      if (settings.preferences) {
+        user.settings.preferences = { ...(user.settings.preferences || {}), ...settings.preferences };
+      }
+      if (settings.companyInfo) {
+        user.settings.companyInfo = { ...(user.settings.companyInfo || {}), ...settings.companyInfo };
+      }
+      if (settings.payrollConfig) {
+        user.settings.payrollConfig = { ...(user.settings.payrollConfig || {}), ...settings.payrollConfig };
+      }
+      if (settings.notifications) {
+        user.settings.notifications = { ...(user.settings.notifications || {}), ...settings.notifications };
+      }
     }
+
+    await user.save();
 
     res.status(200).json({
       message: "Settings updated successfully",
