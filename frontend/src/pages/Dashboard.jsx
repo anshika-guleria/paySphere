@@ -12,6 +12,31 @@ import {
 } from '../components/common/Skeleton';
 import api from '../services/api';
 
+// Trigger a file download from the browser
+const downloadFile = (url, filename) => {
+  const token = localStorage.getItem('token');
+  fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error('No data to export');
+      return res.blob();
+    })
+    .then((blob) => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    })
+    .catch((err) => {
+      console.error('Export failed:', err);
+      alert('No payroll data found for the current month. Finalize payroll first.');
+    });
+};
+
 // --- Dashboard Component ---
 const DashboardOverview = ({
   search,
@@ -60,6 +85,13 @@ const DashboardOverview = ({
         <div className="flex gap-3 w-full sm:w-auto">
           <button className="flex-1 cursor-pointer sm:flex-none px-5 py-2.5 border border-gray-200 dark:border-slate-800 dark:text-slate-200 rounded-lg text-sm font-semibold hover:shadow dark:hover:bg-slate-800 transition-colors">
             Reports
+          </button>
+
+          <button
+            onClick={() => downloadFile('/api/payroll/export-csv', `payroll-export.csv`)}
+            className="flex-1 cursor-pointer sm:flex-none px-5 py-2.5 border border-gray-200 dark:border-slate-800 dark:text-slate-200 rounded-lg text-sm font-semibold hover:shadow dark:hover:bg-slate-800 transition-colors"
+          >
+            Export CSV
           </button>
 
           <button
